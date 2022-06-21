@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "chunkentity",
+  "version": "${version}",
+  "name": "ChunkEntity",
+  "description": "A framework for adding entities that can contain blocks like chunks.",
+  "authors": [
+    "Dudejoe870"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/chunkentity/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "dudejoe870.chunkentity.client.ChunkEntityClient"
+    ],
+    "main": [
+      "dudejoe870.chunkentity.ChunkEntityMod"
+    ]
+  },
+  "mixins": [
+    "chunkentity.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.7",
+    "minecraft": "1.19",
+    "java": ">=17"
+  }
+}
