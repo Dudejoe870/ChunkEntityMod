@@ -1,6 +1,7 @@
 package dudejoe870.chunkentity;
 
-import dudejoe870.chunkentity.client.ChunkEntityModelBuilder;
+import dudejoe870.chunkentity.client.*;
+import it.unimi.dsi.fastutil.objects.*;
 import net.fabricmc.api.*;
 import net.minecraft.block.*;
 import net.minecraft.entity.*;
@@ -12,6 +13,12 @@ import net.minecraft.world.*;
 import net.minecraft.world.chunk.*;
 
 public class ChunkEntity extends Entity {
+    private static final ReferenceArraySet<ChunkEntity> loadedChunkEntities = new ReferenceArraySet<>();
+
+    public static ReferenceSet<ChunkEntity> getAllLoadedChunkEntities() {
+        return loadedChunkEntities;
+    }
+
     @Environment(EnvType.CLIENT)
     protected static ChunkEntityModelBuilder defaultModelBuilder;
 
@@ -34,6 +41,14 @@ public class ChunkEntity extends Entity {
                 PalettedContainer.PaletteProvider.BLOCK_STATE);
         if (world.isClient() && getModelBuilder() == null)
             initializeModelBuilder();
+
+        loadedChunkEntities.add(this);
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        super.remove(reason);
+        loadedChunkEntities.remove(this);
     }
 
     public ChunkEntityView getWorldView() {
@@ -77,10 +92,12 @@ public class ChunkEntity extends Entity {
 
     ///*
     protected PalettedContainer<BlockState> getInitialState() {
-        return new PalettedContainer<>(
-            Block.STATE_IDS,
-            Blocks.AIR.getDefaultState(),
-            PalettedContainer.PaletteProvider.BLOCK_STATE);
+        PalettedContainer<BlockState> state = new PalettedContainer<>(
+                Block.STATE_IDS,
+                Blocks.AIR.getDefaultState(),
+                PalettedContainer.PaletteProvider.BLOCK_STATE);
+        state.swap(0, 0, 0, Blocks.DIRT.getDefaultState());
+        return state;
     }
     //*/
 
