@@ -2,10 +2,15 @@ package dudejoe870.chunkentity.client;
 
 import com.mojang.blaze3d.systems.*;
 import dudejoe870.chunkentity.*;
+import dudejoe870.chunkentity.mixin.client.WorldRendererInvoker;
 import net.fabricmc.api.*;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.*;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.*;
+import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.*;
 import net.minecraft.util.*;
 import net.minecraft.util.math.*;
@@ -37,14 +42,31 @@ public class ChunkEntityRenderer<E extends ChunkEntity> extends EntityRenderer<E
         Profiler profiler = chunkEntity.world.getProfiler();
         profiler.push("chunk_entity_rendering");
         {
+            profiler.swap("terrain");
             renderLayer(RenderLayer.getSolid(), matrices, chunkEntity);
             renderLayer(RenderLayer.getCutoutMipped(), matrices, chunkEntity);
             renderLayer(RenderLayer.getCutout(), matrices, chunkEntity);
+
+            // (For testing)
+            /*
+            profiler.swap("block_outline");
+            drawBlockOutline(matrices, new BlockPos(0, 0, 0), chunkEntity,
+                    vertexConsumerProvider.getBuffer(RenderLayer.getLines()));
+            */
         }
         profiler.pop();
     }
 
-    protected void renderLayer(RenderLayer layer, MatrixStack matrices, ChunkEntity chunkEntity) {
+    protected void drawBlockOutline(MatrixStack matrices, BlockPos pos, E chunkEntity, VertexConsumer consumer) {
+        BlockState state = chunkEntity.getBlockState(pos);
+
+        WorldRendererInvoker.invokeDrawCuboidShapeOutline(matrices, consumer,
+                state.getOutlineShape(chunkEntity.getWorldView(), pos, ShapeContext.of(chunkEntity)),
+                pos.getX(), pos.getY(), pos.getZ(),
+                0.0f, 0.0f, 0.0f, 0.4f);
+    }
+
+    protected void renderLayer(RenderLayer layer, MatrixStack matrices, E chunkEntity) {
         if (layer == RenderLayer.getTranslucent()) return; // TODO: Add support for the translucent layer.
 
         RenderSystem.assertOnRenderThread();
@@ -56,7 +78,7 @@ public class ChunkEntityRenderer<E extends ChunkEntity> extends EntityRenderer<E
         if (vertexBuffer.getVertexFormat() == null || vertexBuffer.isClosed()) return;
 
         Profiler profiler = chunkEntity.world.getProfiler();
-        profiler.swap(() -> "chunk_entity_render_layer_" + layer);
+        profiler.swap(() -> "render_layer_" + layer);
         layer.startDrawing();
         {
             Shader shader = RenderSystem.getShader();
@@ -84,6 +106,12 @@ public class ChunkEntityRenderer<E extends ChunkEntity> extends EntityRenderer<E
                 shader.gameTime.set(RenderSystem.getShaderGameTime());
             if (shader.chunkOffset != null)
                 shader.chunkOffset.set(Vec3f.ZERO);
+            if (shader.lineWidth != null)
+                shader.lineWidth.set(RenderSystem.getShaderLineWidth());
+            if (shader.screenSize != null) {
+                Window window = MinecraftClient.getInstance().getWindow();
+                shader.screenSize.set((float)window.getFramebufferWidth(), (float)window.getFramebufferHeight());
+            }
             RenderSystem.setupShaderLights(shader);
 
             shader.bind();

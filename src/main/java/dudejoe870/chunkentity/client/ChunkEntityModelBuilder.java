@@ -8,12 +8,14 @@ import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import net.fabricmc.api.*;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.chunk.BlockBufferBuilderStorage;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.math.BlockPos;
@@ -93,7 +95,7 @@ public class ChunkEntityModelBuilder<E extends ChunkEntity> {
                 if (blockLayers.add(blockLayer))
                     builder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL);
                 {
-                    net.minecraft.util.math.random.Random random = Random.create();
+                    Random random = Random.create();
 
                     BlockRenderManager blockRenderManager = MinecraftClient.getInstance().getBlockRenderManager();
 

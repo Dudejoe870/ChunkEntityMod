@@ -142,29 +142,38 @@ public class ChunkEntity extends Entity {
         return this.blockStates;
     }
 
-    public void setBlockState(int x, int y, int z, BlockState blockState) {
+    public void setBlockState(BlockPos pos, BlockState blockState) {
         if (this.doesDynamicallyResize()) {
-            int newSizeX = Math.max(this.getSizeX(), x+1);
-            int newSizeY = Math.max(this.getSizeY(), y+1);
-            int newSizeZ = Math.max(this.getSizeZ(), z+1);
+            int newSizeX = Math.max(this.getSizeX(), pos.getX()+1);
+            int newSizeY = Math.max(this.getSizeY(), pos.getY()+1);
+            int newSizeZ = Math.max(this.getSizeZ(), pos.getZ()+1);
             this.resizeChunk(newSizeX, newSizeY, newSizeZ);
         } else {
-            if (x >= this.getSizeX() || y >= this.getSizeY() || z >= this.getSizeZ()) return;
+            if (pos.getX() >= this.getSizeX() || pos.getY() >= this.getSizeY() || pos.getZ() >= this.getSizeZ()) return;
         }
 
-        blockStates.swap(x, y, z, blockState);
+        blockStates.swap(pos.getX(), pos.getY(), pos.getZ(), blockState);
 
         if (!world.isClient()) {
             ChunkEntityNetworking.BLOCK_SET_S2C_HANDLER.sendAll(
-                    new ChunkEntityNetworking.ChunkEntityBlockSetPacketS2C(this, x, y, z, blockState));
+                    new ChunkEntityNetworking.ChunkEntityBlockSetPacketS2C(this, pos.getX(), pos.getY(), pos.getZ(), blockState));
         }
         else if (world.isClient()) getModelBuilder().rebuild(this);
     }
 
-    public BlockState getBlockState(int x, int y, int z) {
-        if ((x >= this.getSizeX() || y >= this.getSizeY() || z >= this.getSizeZ()) || (x < 0 || y < 0 || z < 0))
+    public BlockState getBlockState(BlockPos pos) {
+        if ((pos.getX() >= this.getSizeX() || pos.getY() >= this.getSizeY() || pos.getZ() >= this.getSizeZ()) ||
+                (pos.getX() < 0 || pos.getY() < 0 || pos.getZ() < 0))
             return Blocks.AIR.getDefaultState();
-        return blockStates.get(x, y, z);
+        return blockStates.get(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public final void setBlockState(int x, int y, int z, BlockState blockState) {
+        this.setBlockState(new BlockPos(x, y, z), blockState);
+    }
+
+    public final BlockState getBlockState(int x, int y, int z) {
+        return this.getBlockState(new BlockPos(x, y, z));
     }
 
     @Override
@@ -234,12 +243,11 @@ public class ChunkEntity extends Entity {
     }
 
     @Override
-    public Packet<?> createSpawnPacket() {
-        return new EntitySpawnS2CPacket(this);
-    }
+    public Packet<?> createSpawnPacket() { return new EntitySpawnS2CPacket(this); }
 
     @Override
-    public boolean isInsideWall() {
-        return false;
-    }
+    public boolean isInsideWall() { return false; }
+
+    @Override
+    public boolean isGlowing() { return false; }
 }

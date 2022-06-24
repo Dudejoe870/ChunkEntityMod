@@ -73,13 +73,8 @@ public class ChunkEntityView<E extends ChunkEntity> implements BlockRenderView {
     }
 
     @Override
-    public <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos pos, BlockEntityType<T> type) {
-        return BlockRenderView.super.getBlockEntity(pos, type);
-    }
-
-    @Override
     public BlockState getBlockState(BlockPos pos) {
-        return entity.getBlockState(pos.getX(), pos.getY(), pos.getZ());
+        return entity.getBlockState(pos);
     }
 
     @Override

@@ -266,10 +266,10 @@ public class ChunkEntityNetworking {
 
             @Override
             public void handle(MinecraftClient client, ClientPlayNetworkHandler handler, ChunkEntityClientResyncPacketS2C packet, PacketSender sender) {
+                ChunkEntityMod.LOGGER.info(String.format("Resyncing Chunk Entity (id=%d)", packet.entity.getId()));
+
                 packet.entity.setBlockStates(packet.blockStates);
                 packet.entity.resizeChunk(packet.sizeX, packet.sizeY, packet.sizeZ);
-
-                ChunkEntityMod.LOGGER.info(String.format("Resyncing Chunk Entity (id=%d)", packet.entity.getId()));
             }
         }
 
@@ -317,12 +317,13 @@ public class ChunkEntityNetworking {
             // TODO: Add a timeout per player (this could be a potential attack vector for DDOS attacks on servers)
             @Override
             public void handle(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, ChunkEntityClientReadyForResyncPacketC2S packet, PacketSender sender) {
+                ChunkEntityMod.LOGGER.info(String.format("Player %s (uuid=%s) requested resync for Chunk Entity (id=%d)",
+                        player.getDisplayName().getString(), player.getUuidAsString(), packet.entity.getId()));
+
                 CLIENT_RESYNC_S2C_HANDLER.send(
                         new ChunkEntityClientResyncPacketS2C(packet.entity,
                                 packet.entity.getBlockStates(),
                                 packet.entity.getSizeX(), packet.entity.getSizeY(), packet.entity.getSizeZ()), player);
-                ChunkEntityMod.LOGGER.info(String.format("Player %s (uuid=%s) requested resync for Chunk Entity (id=%d)",
-                        player.getDisplayName().getString(), player.getUuidAsString(), packet.entity.getId()));
             }
         }
 
